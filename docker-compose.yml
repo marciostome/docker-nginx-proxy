@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  nginx-proxy:
+    container_name: nginx-proxy
+    image: nginxproxy/nginx-proxy:1.0.1
+    network_mode: 'bridge'
+    ports:
+      - 80:80
+      - 443:443
+    restart: always
+    volumes:
+      - html:/usr/share/nginx/html
+      - certs:/etc/nginx/certs:ro
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./conf:/etc/nginx/conf.d
+      - ./vhost:/etc/nginx/vhost.d
+
+  acme-companion:
+    container_name: nginx-proxy-acme
+    image: nginxproxy/acme-companion:2.2.1
+    network_mode: 'bridge'
+    restart: always
+    volumes_from:
+      - nginx-proxy
+    volumes:
+      - certs:/etc/nginx/certs:rw
+      - acme:/etc/acme.sh
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+volumes:
+  vhost:
+  html:
+  certs:
+  acme:
